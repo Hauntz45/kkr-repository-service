@@ -32,6 +32,10 @@ export class Company {
   @Prop()
   logoUrl: string;
 
+  // NEW: Stores the hash of the content to detect changes
+  @Prop({ select: false }) // Don't return this in API calls by default
+  contentHash: string;
+
   @Prop({ default: Date.now })
   scrapedAt: Date;
 
