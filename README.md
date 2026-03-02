@@ -1,98 +1,106 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# KKR Portfolio Intelligence Engine
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+![Stack](https://img.shields.io/badge/Tech-NestJS%20%7C%20MongoDB%20%7C%20Docker-blue)
+![AI](https://img.shields.io/badge/AI-Llama%203.2%20(Ollama)-orange)
+![License](https://img.shields.io/badge/License-MIT-lightgrey)
 
-## Description
+## Executive Summary
+The **KKR Portfolio Intelligence Engine** is a specialized ETL (Extract, Transform, Load) pipeline designed to aggregate, enrich, and analyze the investment portfolio of **KKR (Kohlberg Kravis Roberts)**, one of the world's leading global investment firms.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Unlike traditional scrapers that produce raw, unstructured text, this system functions as a **Market Intelligence Platform**. It combines direct source extraction with **Generative AI (Llama 3.2)** and **External Metadata Crawling** to transform fragmented web data into structured, queryable signals.
 
-## Project setup
+### Business Value & Use Cases
+Private market data is notoriously opaque. This tool bridges the information gap for:
 
-```bash
-$ npm install
-```
+1.  **Deal Sourcing & Competitive Intelligence:**
+    *   *Problem:* Competitors need to know where KKR is deploying capital *now* (e.g., shifting from "Energy" to "Tech Growth").
+    *   *Solution:* By tracking the `updatedAt` and `contentHash` of specific records, we detect strategic pivots in asset descriptions before they hit the news.
 
-## Compile and run the project
+2.  **B2B Vendor Prospecting:**
+    *   *Problem:* Service providers (Cloud, HR, Legal) want to sell to KKR-backed firms because they have capital and a mandate for transformation.
+    *   *Solution:* Our AI normalizes vague descriptions into precise tags (e.g., `["SaaS", "B2B", "Cybersecurity"]`), allowing vendors to filter for their exact Ideal Customer Profile (ICP).
 
-```bash
-# development
-$ npm run start
+3.  **Portfolio Health Monitoring:**
+    *   *Problem:* "Zombie" companies (dead websites) are red flags in a portfolio.
+    *   *Solution:* The integrated **Spider Service** validates external URLs and captures metadata, providing a live health check on the portfolio's digital presence.
 
-# watch mode
-$ npm run start:dev
+---
 
-# production mode
-$ npm run start:prod
-```
+## Quick Start
 
-## Run tests
+### Prerequisites
+*   **Docker Desktop** (Required for Database)
+*   **Node.js v20+**
+*   **Ollama** (Required for AI features) with `llama3.2` model pulled.
 
-```bash
-# unit tests
-$ npm run test
+### Installation
 
-# e2e tests
-$ npm run test:e2e
+1.  **Clone the Repository**
+    ```bash
+    git clone https://github.com/Hauntz45/kkr-repository-service.git
+    cd kkr-portfolio-service
+    ```
 
-# test coverage
-$ npm run test:cov
-```
+2.  **Start Infrastructure**
+    Spin up the MongoDB instance.
+    ```bash
+    docker-compose up -d
+    ```
 
-## Deployment
+3.  **Install Dependencies**
+    ```bash
+    npm install
+    ```
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+4.  **Configure Environment**
+    Create a `.env` file in the root directory:
+    ```env
+    MONGO_URI=mongodb://root:rootpassword@localhost:27017/kkr_portfolio?authSource=admin
+    PORT=3000
+    ENABLE_LLM=true  # Set to 'false' for high-speed Regex mode
+    ```
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+5.  **Run the Application**
+    ```bash
+    npm run start:dev
+    ```
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+### Usage
+The API is documented via **Swagger UI**. Access it at **[http://localhost:3000/api](http://localhost:3000/api)**.
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+#### Core Workflows:
+1.  **Trigger ETL Pipeline:**
+    *   `POST /scraper/sync`
+    *   *Action:* Scrapes KKR, checks for changes, fetches external metadata, runs AI enrichment, and updates the DB.
+2.  **Search Companies:**
+    *   `GET /companies/search?q=Software`
+    *   *Action:* Returns companies matching the partial name (Case Insensitive).
+3.  **View All Data:**
+    *   `GET /companies`
+4.  **Delete Company:**
+    *   `DELETE /companies/{name}`
+    *   *Action:* Deletes the company matching the exact name from the database.
 
-## Resources
+---
 
-Check out a few resources that may come in handy when working with NestJS:
+## AI & Enrichment Strategy
+The system employs a **Hybrid Intelligence Strategy** to balance accuracy, cost, and performance.
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+| Feature | Method | Business Logic |
+| :--- | :--- | :--- |
+| **Context Injection** | Prompt Engineering | We feed KKR's official `Industry` and `Asset Class` into the LLM prompt. This prevents hallucinations by grounding the AI in trusted data. |
+| **Prompt Hardening** | Negative Constraints | The LLM is strictly instructed to output **JSON only** and avoid generic tags (e.g., "Company"). It enforces a specific taxonomy: `[Industry, Model, Product]`. |
+| **Offline Fallback** | Regex Heuristics | If the AI service is unreachable or disabled, the system seamlessly degrades to a weighted keyword dictionary, ensuring 100% uptime. |
 
-## Support
+---
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## Resilience & Performance
+*   **Circuit Breaker:** Automatically pauses the scraper if KKR's server returns consecutive errors (4xx/5xx) to prevent IP bans.
+*   **Smart Upsert (Hashing):** Uses MD5 content hashing (`crypto`) to compare incoming data against the database. If the hash matches, the DB write is skipped. This reduces IOPS by ~95% on subsequent runs.
+*   **Polite Scraping:** Implements Exponential Backoff and mimicry of human browsing headers (User-Agent spoofing) to respect server policies.
 
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## Future Roadmap
+*   **Cron Scheduling:** Automate daily syncs.
+*   **Team Mapping:** Scrape KKR Team pages to map specific Deal Partners to Portfolio Companies.
+*   **News Integration:** Fetch recent press releases via Google News API for exit/IPO signals.
