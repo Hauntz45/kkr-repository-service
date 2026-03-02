@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { IEnrichmentStrategy, EnrichmentResult } from './enrichment.interface';
+import { IEnrichmentStrategy, EnrichmentResult, EnrichmentContext } from './enrichment.interface';
 import { RegexStrategy } from './strategies/regex.strategy';
 import { OllamaStrategy } from './strategies/ollama.strategy';
 
@@ -25,8 +25,8 @@ export class EnrichmentService {
     }
   }
 
-  async enrichCompany(description: string): Promise<EnrichmentResult> {
-    if (!description) return { summary: '', tags: [] };
-    return this.strategy.enrich(description);
+  async enrichCompany(context: EnrichmentContext): Promise<EnrichmentResult> {
+    if (!context.description) return { summary: '', tags: [] };
+    return this.strategy.enrich(context);
   }
 }

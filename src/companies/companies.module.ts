@@ -4,11 +4,13 @@ import { CompaniesService } from './companies.service';
 import { CompaniesController } from './companies.controller';
 import { Company, CompanySchema } from './schemas/company.schema';
 import { EnrichmentModule } from '../enrichment/enrichment.module';
+import { SpiderModule } from '../spider/spider.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Company.name, schema: CompanySchema }]),
     EnrichmentModule,
+    SpiderModule,
   ],
   controllers: [CompaniesController],
   providers: [CompaniesService],

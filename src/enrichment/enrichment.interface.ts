@@ -3,6 +3,15 @@ export interface EnrichmentResult {
   tags: string[];
 }
 
+export interface EnrichmentContext {
+  description: string;
+  industry: string;
+  assetClass: string;
+  region: string;
+  websiteTitle?: string;
+  websiteDescription?: string;
+}
+
 export interface IEnrichmentStrategy {
-  enrich(text: string): Promise<EnrichmentResult>;
+  enrich(context: EnrichmentContext): Promise<EnrichmentResult>;
 }

@@ -1,22 +1,41 @@
 import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
-import { IEnrichmentStrategy, EnrichmentResult } from '../enrichment.interface';
+import { IEnrichmentStrategy, EnrichmentResult, EnrichmentContext } from '../enrichment.interface';
 
 @Injectable()
 export class OllamaStrategy implements IEnrichmentStrategy {
   private readonly logger = new Logger(OllamaStrategy.name);
   private readonly OLLAMA_URL = 'http://localhost:11434/api/generate';
-  private readonly MODEL = 'llama3.2'; // Matches what we pulled
+  private readonly MODEL = 'llama3.2';
 
-  async enrich(text: string): Promise<EnrichmentResult> {
+  async enrich(context: EnrichmentContext): Promise<EnrichmentResult> {
+    const { description, industry, websiteTitle, websiteDescription } = context;
+
+    // We structure the prompt to force specific behaviors
     const prompt = `
-      You are a financial analyst. Analyze this company description: "${text}"
+      Role: Senior Private Equity Analyst.
       
-      Return a JSON object with:
-      1. "summary": A 10-word business summary.
-      2. "tags": Array of 3 specific industry tags.
+      Input Data:
+      - KKR Industry Category: ${industry}
+      - KKR Description: "${description}"
+      - Website Title: "${websiteTitle || 'N/A'}"
+      - Website Meta: "${websiteDescription || 'N/A'}"
       
-      Output ONLY VALID JSON. No markdown.
+      Task:
+      1. Write a 1-sentence executive summary (max 20 words).
+      2. Generate exactly 3 tags following this framework:
+         - Tag 1: The specific Industry (e.g., "Dental Services" instead of "Healthcare").
+         - Tag 2: The Business Model (e.g., "B2B", "SaaS", "DSO").
+         - Tag 3: The Key Product/Asset (e.g., "Implants", "Cloud Platform").
+      
+      Constraints:
+      - Tags must be DISTINCT (No synonyms).
+      - Do NOT use generic tags like "Company" or "Business".
+      - Translate all non-English input to ENGLISH.
+      
+      Output:
+      Return ONLY valid JSON in this format:
+      { "summary": "...", "tags": ["Tag1", "Tag2", "Tag3"] }
     `;
 
     try {
@@ -24,13 +43,16 @@ export class OllamaStrategy implements IEnrichmentStrategy {
         model: this.MODEL,
         prompt: prompt,
         stream: false,
-        format: 'json' // Forces JSON output
+        format: 'json',
+        options: {
+          temperature: 0.1, // Lower temperature = more deterministic/factual
+        }
       });
 
       return JSON.parse(response.data.response);
     } catch (error) {
       this.logger.error(`Ollama failed: ${error.message}`);
-      return { summary: text, tags: [] };
+      return { summary: description, tags: [industry] };
     }
   }
 }

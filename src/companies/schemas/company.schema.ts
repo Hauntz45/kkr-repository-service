@@ -39,6 +39,14 @@ export class Company {
   @Prop({ default: Date.now })
   scrapedAt: Date;
 
+  @Prop({ type: Object })
+  websiteData?: {
+    title?: string;
+    metaDescription?: string;
+    isAlive: boolean;
+    lastCheckedAt: Date;
+  };
+
   // Placeholder for the AI Enrichment (Bonus)
   @Prop({ type: Object, required: false })
   aiAnalysis?: {

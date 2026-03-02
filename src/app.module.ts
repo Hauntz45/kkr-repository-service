@@ -6,6 +6,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ScraperModule } from './scraper/scraper.module';
 import { EnrichmentModule } from './enrichment/enrichment.module';
+import { SpiderModule } from './spider/spider.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { EnrichmentModule } from './enrichment/enrichment.module';
     CompaniesModule,
     ScraperModule,
     EnrichmentModule,
+    SpiderModule,
   ],
   controllers: [AppController],
   providers: [AppService],
