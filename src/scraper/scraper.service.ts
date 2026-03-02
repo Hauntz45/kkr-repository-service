@@ -1,24 +1,34 @@
 import { Injectable, Logger } from '@nestjs/common';
 import axios from 'axios';
 import * as cheerio from 'cheerio';
-import * as https from 'https'; // <--- 1. NEW IMPORT
+import * as https from 'https';
 import { CompaniesService } from '../companies/companies.service';
 import { KKRResponse, KKRPortfolioItem } from './types';
-
-const SLEEP_MS = 2000; // 2 seconds delay between pages (Rate Limiting)
-const MAX_RETRIES = 3;
 
 @Injectable()
 export class ScraperService {
   private readonly logger = new Logger(ScraperService.name);
-  private readonly BASE_URL = 'https://www.kkr.com/content/kkr/sites/global/en/invest/portfolio/jcr:content/root/main-par/bioportfoliosearch.bioportfoliosearch.json';
+  private readonly BASE_URL =
+    'https://www.kkr.com/content/kkr/sites/global/en/invest/portfolio/jcr:content/root/main-par/bioportfoliosearch.bioportfoliosearch.json';
+
+  // Resiliency Configuration
+  private readonly MAX_RETRIES = 3;
+  private readonly PAGE_DELAY_MS = 2000; // 2s delay to respect server rate limits
 
   constructor(private readonly companiesService: CompaniesService) {}
 
+  /**
+   * Orchestrates the full Extraction, Transformation, and Load (ETL) pipeline.
+   *
+   * Features:
+   * - Pagination handling (auto-detects total pages).
+   * - Circuit Breaker (stops job if too many consecutive errors).
+   * - Rate Limiting (delays between requests).
+   */
   async scrapeAll(): Promise<{ message: string; total: number }> {
-    this.logger.log('Starting KKR Portfolio Scrape (Resilient Mode)...');
-    
-    // Agent from previous step
+    this.logger.log('Starting KKR Portfolio Extraction Pipeline...');
+
+    // Agent to handle corporate proxies/SSL issues
     const httpsAgent = new https.Agent({ rejectUnauthorized: false });
 
     let currentPage = 1;
@@ -28,84 +38,82 @@ export class ScraperService {
 
     do {
       try {
-        // RATE LIMITING: Sleep before fetching (except first page)
-        if (currentPage > 1) {
-            await this.sleep(SLEEP_MS); 
-        }
+        // Rate Limiting
+        if (currentPage > 1) await this.sleep(this.PAGE_DELAY_MS);
 
-        this.logger.log(`Fetching page ${currentPage}...`);
-        
-        // RETRY MECHANISM: Wrap the request
+        this.logger.log(`Processing page ${currentPage}...`);
+
+        // Fetch with Retry Logic
         const data = await this.fetchWithRetry(currentPage, httpsAgent);
-        
-        // Reset error counter on success
-        consecutiveErrors = 0;
 
-        // Update total pages
+        // Update state
+        consecutiveErrors = 0;
         if (data.pages) totalPages = data.pages;
 
+        // Process Batch
         if (data.results && data.results.length > 0) {
           await this.processBatch(data.results);
           totalProcessed += data.results.length;
-          this.logger.log(`Page ${currentPage} processed. (${data.results.length} companies)`);
+          this.logger.log(
+            `Page ${currentPage} complete. (${data.results.length} items)`,
+          );
         }
 
         currentPage++;
       } catch (error) {
-        this.logger.error(`Failed to process page ${currentPage} after retries.`);
+        this.logger.error(`Page ${currentPage} failed: ${error.message}`);
         consecutiveErrors++;
-        
-        // Circuit Breaker: If 3 pages fail in a row, stop the scraper.
+
+        // Circuit Breaker
         if (consecutiveErrors >= 3) {
-            this.logger.error('Too many consecutive errors. Aborting scrape.');
-            break;
+          this.logger.error(
+            'Circuit Breaker tripped: Too many consecutive errors. Aborting job.',
+          );
+          break;
         }
-        
-        // Skip this page and try the next one
         currentPage++;
       }
     } while (currentPage <= totalPages);
 
-    this.logger.log(`Scraping complete. Processed ${totalProcessed} companies.`);
-    return { message: 'Scraping complete', total: totalProcessed };
+    this.logger.log(`Job Complete. Total items: ${totalProcessed}.`);
+    return { message: 'Scraping job completed', total: totalProcessed };
   }
 
   /**
-   * Helper: Retries the Axios request with exponential backoff
+   * Fetches data with Exponential Backoff strategy.
+   * Delays: 2s -> 4s -> 8s -> Fail
    */
-  private async fetchWithRetry(page: number, agent: https.Agent): Promise<KKRResponse> {
+  private async fetchWithRetry(
+    page: number,
+    agent: https.Agent,
+  ): Promise<KKRResponse> {
     let attempt = 1;
-    
-    while (attempt <= MAX_RETRIES) {
+    while (attempt <= this.MAX_RETRIES) {
       try {
         const response = await axios.get<KKRResponse>(this.BASE_URL, {
           params: { page, sortParameter: 'name', sortingOrder: 'asc' },
           httpsAgent: agent,
-          timeout: 10000, // 10s timeout
+          timeout: 10000,
         });
         return response.data;
       } catch (error) {
-        if (attempt === MAX_RETRIES) throw error;
-        
-        const delay = 1000 * Math.pow(2, attempt); // Exponential: 2s, 4s, 8s
-        this.logger.warn(`Page ${page} failed (Attempt ${attempt}). Retrying in ${delay}ms...`);
+        if (attempt === this.MAX_RETRIES) throw error;
+        const delay = 1000 * Math.pow(2, attempt);
+        this.logger.warn(
+          `Page ${page} Retry (${attempt}/${this.MAX_RETRIES}) in ${delay}ms...`,
+        );
         await this.sleep(delay);
         attempt++;
       }
     }
-    throw new Error(`Failed to fetch page ${page} after ${MAX_RETRIES} attempts`);
-  }
-
-  private sleep(ms: number) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    throw new Error(
+      `Failed to fetch page ${page} after ${this.MAX_RETRIES} attempts`,
+    );
   }
 
   private async processBatch(items: KKRPortfolioItem[]): Promise<void> {
     for (const item of items) {
-      // Clean HTML from description
       const cleanDescription = this.cleanHtml(item.description);
-      // Parse year, handle empty strings
-    //   const year = item.yoi ? parseInt(item.yoi, 10) : undefined;
       const year = item.yoi ? parseInt(item.yoi, 10) : null;
 
       await this.companiesService.createOrUpdate({
@@ -116,7 +124,6 @@ export class ScraperService {
         hqLocation: item.hq || '',
         description: cleanDescription,
         website: item.url || '',
-        // yearOfInvestment: year,
         yearOfInvestment: year as any,
         logoUrl: item.logo || '',
       });
@@ -127,5 +134,9 @@ export class ScraperService {
     if (!html) return '';
     const $ = cheerio.load(html);
     return $.text().trim();
+  }
+
+  private sleep(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 }

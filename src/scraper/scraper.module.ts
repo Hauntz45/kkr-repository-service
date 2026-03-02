@@ -4,7 +4,7 @@ import { ScraperController } from './scraper.controller';
 import { CompaniesModule } from '../companies/companies.module';
 
 @Module({
-  imports: [CompaniesModule], // Import this to access CompaniesService
+  imports: [CompaniesModule],
   controllers: [ScraperController],
   providers: [ScraperService],
 })

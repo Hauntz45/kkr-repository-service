@@ -6,7 +6,7 @@ export interface KKRPortfolioItem {
   assetClass: string;
   region: string;
   url: string;
-  yoi: string; // The API returns year as a string "2022"
+  yoi: string; // The API returns year as a string
   logo: string;
 }
 

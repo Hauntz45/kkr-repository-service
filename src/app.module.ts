@@ -2,19 +2,17 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CompaniesModule } from './companies/companies.module';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { ScraperModule } from './scraper/scraper.module';
 import { EnrichmentModule } from './enrichment/enrichment.module';
 import { SpiderModule } from './spider/spider.module';
 
 @Module({
   imports: [
-    // 1. Load .env file
+    // 1. Global Configuration (Load .env)
     ConfigModule.forRoot({
-      isGlobal: true, // Makes ConfigService available everywhere
+      isGlobal: true,
     }),
-    // 2. Connect to MongoDB using the variable from .env
+    // 2. Database Connection
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -22,12 +20,13 @@ import { SpiderModule } from './spider/spider.module';
       }),
       inject: [ConfigService],
     }),
+    // 3. Feature Modules
     CompaniesModule,
     ScraperModule,
     EnrichmentModule,
     SpiderModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}
