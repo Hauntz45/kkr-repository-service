@@ -8,19 +8,19 @@
 ## Executive Summary
 The **KKR Portfolio Intelligence Engine** is a specialized ETL (Extract, Transform, Load) pipeline designed to aggregate, enrich, and analyze the investment portfolio of **KKR (Kohlberg Kravis Roberts)**, one of the world's leading global investment firms.
 
-Unlike traditional scrapers that produce raw, unstructured text, this system functions as a **Market Intelligence Platform**. It combines direct source extraction with **Generative AI (Llama 3.2)** and **External Metadata Crawling** to transform fragmented web data into structured, queryable signals.
+Unlike traditional scrapers that produce raw text, this system functions as a **Market Intelligence Platform**. It combines direct source extraction with **Generative AI** and **External Metadata Crawling** to transform fragmented web data into structured signals, visualizing them in a real-time dashboard.
 
 ### Business Value & Use Cases
 Private market data is notoriously opaque. This tool bridges the information gap for:
 
-1.  **Deal Sourcing & Competitive Intelligence:**
+1.  **Deal Sourcing & Trend Detection:**
     *   *Problem:* Competitors need to know where KKR is deploying capital *now*.
-    *   *Solution:* The **Analytics Engine** visualizes investment velocity over time, plotting Year-over-Year trends by Industry and Region. This highlights strategic pivots (e.g., a sudden increase in "Health Care" investments in 2024).
+    *   *Solution:* The **Analytics Dashboard** visualizes investment velocity over time, plotting Year-over-Year trends by Industry and Region. This highlights strategic pivots (e.g., a sudden shift from "Energy" to "Tech Growth").
 
 
 2.  **B2B Vendor Prospecting:**
-    *   *Problem:* Service providers (Cloud, HR, Legal) want to sell to KKR-backed firms because they have capital and a mandate for transformation.
-    *   *Solution:* Our AI normalizes vague descriptions into precise tags (e.g., `["SaaS", "B2B", "Cybersecurity"]`), allowing vendors to filter for their exact Ideal Customer Profile (ICP).
+    *   *Problem:* Service providers (Cloud, HR, Legal) want to sell to KKR-backed firms but lack contact data.
+    *   *Solution:* Our AI normalizes vague descriptions into precise tags (e.g., `["SaaS", "B2B", "Cybersecurity"]`). The **CSV Export** feature allows sales teams to download this enriched list directly into their CRM.
 
 3.  **Portfolio Health Monitoring:**
     *   *Problem:* "Zombie" companies (dead websites) are red flags in a portfolio.
@@ -68,9 +68,16 @@ Private market data is notoriously opaque. This tool bridges the information gap
     ```
 
 ### Usage
-The API is documented via **Swagger UI**. Access it at **[http://localhost:3000/api](http://localhost:3000/api)**.
+#### 1. Visual Dashboard
+Access the **Real-Time Analytics Dashboard** at **[http://localhost:3000/](http://localhost:3000/)**.
+*   View Industry Exposure, Regional Trends, and AI Tag Clouds.
+*   Monitor total companies tracked.
 
-#### Core Workflows:
+#### 2. Swagger API
+Access the **API Documentation** at **[http://localhost:3000/api](http://localhost:3000/api)**.
+
+
+  #### Core Workflows:
 1.  **Trigger ETL Pipeline:**
     *   `POST /scraper/sync`
     *   *Action:* Scrapes KKR, checks for changes, fetches external metadata, runs AI enrichment, and updates the DB.
@@ -106,6 +113,7 @@ The system employs a **Hybrid Intelligence Strategy** to balance accuracy, cost,
 *   **Circuit Breaker:** Automatically pauses the scraper if KKR's server returns consecutive errors (4xx/5xx) to prevent IP bans.
 *   **Smart Upsert (Hashing):** Uses MD5 content hashing (`crypto`) to compare incoming data against the database. If the hash matches, the DB write is skipped. This reduces IOPS by ~95% on subsequent runs.
 *   **Polite Scraping:** Implements Exponential Backoff and mimicry of human browsing headers (User-Agent spoofing) to respect server policies.
+*   **Read-Time Aggregation:** Uses MongoDB Aggregation Pipelines to calculate complex trends on the fly, ensuring the Dashboard always reflects the latest data without pre-calculation jobs.
 
 ## Future Roadmap
 *   **Cron Scheduling:** Automate daily syncs.

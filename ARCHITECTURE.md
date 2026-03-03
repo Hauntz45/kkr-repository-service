@@ -1,7 +1,7 @@
 # Technical Architecture & Design Decisions
 
 ## System Overview
-The application follows a **Modular Monolith** architecture using **NestJS**. It adheres to **Domain-Driven Design (DDD)** principles, separating concerns into distinct modules (Scraper, Spider, Enrichment, Storage).
+The application follows a **Modular Monolith** architecture using **NestJS**. It adheres to **Domain-Driven Design (DDD)** principles, separating concerns into distinct modules (Scraper, Spider, Enrichment, Storage, Analytics).
 
 ### High-Level Data Flow
 
@@ -27,7 +27,7 @@ graph TD
 
     subgraph "Consumption Layer"
     K --> L(Analytics Service)
-    L -->|Aggregation| M[JSON Trends]
+    L -->|Aggregation| M[JSON Trends / Dashboard]
     K --> N(Export Service)
     N -->|Stream| O[CSV File]
     end
