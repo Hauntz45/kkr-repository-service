@@ -14,8 +14,9 @@ Unlike traditional scrapers that produce raw, unstructured text, this system fun
 Private market data is notoriously opaque. This tool bridges the information gap for:
 
 1.  **Deal Sourcing & Competitive Intelligence:**
-    *   *Problem:* Competitors need to know where KKR is deploying capital *now* (e.g., shifting from "Energy" to "Tech Growth").
-    *   *Solution:* By tracking the `updatedAt` and `contentHash` of specific records, we detect strategic pivots in asset descriptions before they hit the news.
+    *   *Problem:* Competitors need to know where KKR is deploying capital *now*.
+    *   *Solution:* The **Analytics Engine** visualizes investment velocity over time, plotting Year-over-Year trends by Industry and Region. This highlights strategic pivots (e.g., a sudden increase in "Health Care" investments in 2024).
+
 
 2.  **B2B Vendor Prospecting:**
     *   *Problem:* Service providers (Cloud, HR, Legal) want to sell to KKR-backed firms because they have capital and a mandate for transformation.
@@ -81,6 +82,12 @@ The API is documented via **Swagger UI**. Access it at **[http://localhost:3000/
 4.  **Delete Company:**
     *   `DELETE /companies/{name}`
     *   *Action:* Deletes the company matching the exact name from the database.
+5.  **Analyse portfolios:**
+    *   `GET /analytics`
+    *   *Action:* returns pre-aggregated metrics (Industry distribution, Investment velocity, Region heatmaps) ready for dashboard visualization.
+6.  **Data Export:**
+    *   `GET /companies/export`
+    *   *Action:* generates a CSV file of the entire enriched dataset, enabling easy integration with Excel or Tableau.
 
 ---
 

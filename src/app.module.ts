@@ -5,6 +5,7 @@ import { CompaniesModule } from './companies/companies.module';
 import { ScraperModule } from './scraper/scraper.module';
 import { EnrichmentModule } from './enrichment/enrichment.module';
 import { SpiderModule } from './spider/spider.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { SpiderModule } from './spider/spider.module';
     ScraperModule,
     EnrichmentModule,
     SpiderModule,
+    AnalyticsModule,
   ],
   controllers: [],
   providers: [],

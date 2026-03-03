@@ -68,6 +68,15 @@ This document provides a granular breakdown of every file and directory in the `
 | **`spider.module.ts`** | Bundles the spider logic. Exports `SpiderService`. |
 | **`spider.service.ts`** | **Crawler.** Fetches external websites. Handles User-Agent spoofing, SSL headers, and HTML parsing (Cheerio) to extract metadata. |
 
+### 6. Analytics Module (`src/analytics/`)
+*Domain: Business Intelligence*
+
+| File | Responsibility |
+| :--- | :--- |
+| **`analytics.module.ts`** | Bundles the aggregation logic. |
+| **`analytics.controller.ts`** | **API Layer.** Exposes `GET /analytics` for dashboard consumption. |
+| **`analytics.service.ts`** | **Aggregation Layer.** Uses **MongoDB Aggregation Pipelines** ($group, $match, $unwind) to calculate portfolio statistics in real-time. |
+
 ---
 
 ## Test Directory (`test/`)

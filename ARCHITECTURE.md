@@ -24,6 +24,13 @@ graph TD
     I -->|Context + Description| J[Ollama / Llama 3.2]
     J -->|Structured Tags| K[(MongoDB)]
     end
+
+    subgraph "Consumption Layer"
+    K --> L(Analytics Service)
+    L -->|Aggregation| M[JSON Trends]
+    K --> N(Export Service)
+    N -->|Stream| O[CSV File]
+    end
 ```
 
 ## Key Design Patterns
@@ -44,6 +51,19 @@ graph TD
 *   **Solution:**
     *   **Retry:** Exponential Backoff (2s -> 4s -> 8s) for transient network glitches.
     *   **Circuit Breaker:** If 3 consecutive pages fail, the job aborts to prevent logging noise and IP flagging.
+
+### 4. Analytics & Aggregation Engine
+*   **Problem:** Raw data is hard to interpret. Investors need to visualize **Trends over Time** (e.g., "Is KKR shifting focus from Energy to Tech?").
+*   **Solution:** We leverage MongoDB's **Aggregation Framework** to compute statistics on the fly (Read-Time Aggregation).
+*   **Capabilities:**
+    *   **Distribution:** Breakdown by Industry, Region, and AI-Generated Tags.
+    *   **Multi-Dimensional Trends:** Uses compound grouping (`{ year, industry }`) to generate time-series data suitable for Heatmaps and Stacked Bar Charts.
+    *   **Performance:** All calculations are offloaded to the Database Engine (C++), minimizing the memory footprint of the Node.js application.
+
+### 5. Data Export Strategy
+*   **Format:** CSV (Comma Separated Values).
+*   **Implementation:** The system flattens the nested JSON documents (including AI analysis) into tabular format using `json2csv`.
+*   **Stream Handling:** The resulting CSV is piped directly to the HTTP Response stream with `Content-Disposition: attachment`, allowing immediate integration with external tools like Excel, Tableau, or PowerBI.
 
 ---
 
